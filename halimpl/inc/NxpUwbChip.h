@@ -4,8 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include <memory>
-
+#include "phUwbStatus.h"
 #include "phUwbTypes.h"
 
 // Chip type
@@ -54,8 +53,11 @@ public:
   virtual tHAL_UWB_STATUS chip_init() = 0;
 
   // Per-chip device configurations
-  // Binding check, life cycle check.
+  // Binding check, life cycle check, etc.
   virtual tHAL_UWB_STATUS core_init() = 0;
+
+  // Called right before coreInit completed.
+  virtual tHAL_UWB_STATUS core_init_post() { return UWBSTATUS_SUCCESS; }
 
   // Determine device_type_t from DEVICE_INFO_RSP::UWB_CHIP_ID
   virtual device_type_t get_device_type(const uint8_t* param, size_t param_len) = 0;
@@ -64,7 +66,7 @@ public:
   virtual tHAL_UWB_STATUS read_otp(extcal_param_id_t id,
                                    uint8_t *data,
                                    size_t data_len,
-                                   size_t *retlen);
+                                   size_t *retlen) { return UWBSTATUS_NOT_ALLOWED; }
 
   // Apply device calibration
   virtual tHAL_UWB_STATUS apply_calibration(extcal_param_id_t id,

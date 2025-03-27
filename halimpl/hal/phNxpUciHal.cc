@@ -988,6 +988,11 @@ tHAL_UWB_STATUS phNxpUciHal_hw_init()
 
   phNxpUciHal_getVersionInfo();
 
+  status = nxpucihal_ctrl.uwb_chip->core_init_post();
+  if (status != UWBSTATUS_SUCCESS) {
+    return status;
+  }
+
   return UWBSTATUS_SUCCESS;
 }
 
