@@ -79,8 +79,8 @@ tHAL_UWB_STATUS phNxpUciHal_process_ext_cmd_rsp(size_t cmd_len,
   }
 
   const uint8_t mt = (p_cmd[0] & UCI_MT_MASK) >> UCI_MT_SHIFT;
-  const uint8_t gid = p_cmd[0] & UCI_GID_MASK;
-  const uint8_t oid = p_cmd[1] & UCI_OID_MASK;
+  uint8_t gid = p_cmd[0] & UCI_GID_MASK;
+  uint8_t oid = p_cmd[1] & UCI_OID_MASK;
 
   // Create local copy of cmd_data
   uint8_t cmd[UCI_MAX_DATA_LEN];
@@ -94,7 +94,11 @@ tHAL_UWB_STATUS phNxpUciHal_process_ext_cmd_rsp(size_t cmd_len,
   tHAL_UWB_STATUS status = UWBSTATUS_FAILED;
   int nr_retries = 0;
   int nr_timedout = 0;
-
+  if (mt == UCI_MT_DATA) {
+    nxpucihal_ctrl.isLastDataMsgSnd = true;
+    gid = UCI_GID_SESSION_CONTROL;
+    oid = UCI_MSG_SESSION_DATA_CREDIT_NTF;
+  }
   while(nr_retries < MAX_COMMAND_RETRY_COUNT) {
     nxpucihal_ctrl.cmdrsp.StartCmd(gid, oid);
     status = phNxpUciHal_write_unlocked(cmd_len, cmd);
@@ -330,11 +334,10 @@ static void phNxpUciHal_applyCountryCaps(const char country_code[2],
  *
  *******************************************************************************/
 static bool phNxpUciHal_is_retry_not_required(uint8_t uci_octet0) {
-  bool isRetryRequired = false, isChained_cmd = false, isData_Msg = false;
+  bool isRetryNotRequired = false, isChained_cmd = false;
   isChained_cmd = (bool)((uci_octet0 & UCI_PBF_ST_CONT) >> UCI_PBF_SHIFT);
-  isData_Msg = ((uci_octet0 & UCI_MT_MASK) >> UCI_MT_SHIFT) == UCI_MT_DATA;
-  isRetryRequired = isChained_cmd | isData_Msg;
-  return isRetryRequired;
+  isRetryNotRequired = isChained_cmd;
+  return isRetryNotRequired;
 }
 
 // TODO: remove this out

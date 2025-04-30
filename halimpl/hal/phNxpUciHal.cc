@@ -534,6 +534,12 @@ static void handle_rx_packet(uint8_t *buffer, size_t length)
         // TODO: Why should we wake up the user thread here?
         nxpucihal_ctrl.cmdrsp.WakeupError(UWBSTATUS_FAILED);
       }
+    } else if (nxpucihal_ctrl.isLastDataMsgSnd) {
+      if (gid == UCI_GID_SESSION_CONTROL && oid == UCI_MSG_SESSION_DATA_CREDIT_NTF) {
+        usleep(20); /* credit ntf received before wait is started */
+        nxpucihal_ctrl.cmdrsp.Wakeup(gid, oid);
+        nxpucihal_ctrl.isLastDataMsgSnd = false;
+      }
     }
     // End of UCI_MT_NTF
   } else if (mt == UCI_MT_RSP) {
