@@ -281,6 +281,7 @@ typedef struct phNxpUciHal_Control {
 
   // Current country code
   uint8_t country_code[2];
+  uint8_t isLastDataMsgSnd;
 } phNxpUciHal_Control_t;
 
 // RX packet handler
